@@ -24,7 +24,7 @@ async function bootstrap() {
   const document = SwaggerModule.createDocument(app, config);
   SwaggerModule.setup('api', app, document);
 
-  await app.listen(process.env.PORT ?? 3000);
+  await app.listen(process.env.PORT ?? 3001);
   console.log(`La biblioteca se ubica en: http://localhost:${process.env.PORT}`);
   console.log(`Consulta de libros en: http://localhost:${process.env.PORT}/api`);
 }
