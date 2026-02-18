@@ -24,7 +24,15 @@ async function bootstrap() {
   
   const document = SwaggerModule.createDocument(app, config);
   SwaggerModule.setup('api', app, document);
-  app.enableCors();
+  
+  // Configuración de CORS restringida solo a Vercel
+  app.enableCors({
+    origin: process.env.CORS_ORIGIN || 'https://my-repository-seven-hazel.vercel.app',
+    credentials: true,
+    methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH'],
+    allowedHeaders: ['Content-Type', 'Authorization'],
+  });
+  
   await app.listen(process.env.PORT ?? 3001);
   console.log(`La biblioteca se ubica en: http://localhost:${process.env.PORT}`);
   console.log(`Consulta de libros en: http://localhost:${process.env.PORT}/api`);
