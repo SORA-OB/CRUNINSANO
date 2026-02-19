@@ -9,7 +9,6 @@ async function bootstrap() {
   const app = await NestFactory.create(AppModule);
 
   app.useGlobalInterceptors(new TimeoutInterceptor());
-  await app.listen(3000)
 
   // Configuración de validación
   app.useGlobalPipes(new ValidationPipe({
