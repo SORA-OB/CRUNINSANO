@@ -16,35 +16,13 @@ export class RegistrosService {
     });
   }
 
-  // READ - Obtener todos los registros CON PAGINACIÓN
-  async findAll(page: number = 1, limit: number = 20) {
-    // Validación de seguridad
-    if (page < 1) page = 1;
-    if (limit < 1) limit = 1;
-    if (limit > 100) limit = 100; // Máximo 100 registros por página para evitar DoS
-
-    const skip = (page - 1) * limit;
-
-    const [registros, total] = await Promise.all([
-      this.prisma.registros.findMany({
-        skip,
-        take: limit,
-        orderBy: {
-          id: 'desc',
-        },
-      }),
-      this.prisma.registros.count(),
-    ]);
-
-    return {
-      data: registros,
-      pagination: {
-        total,
-        page,
-        limit,
-        pages: Math.ceil(total / limit),
+  // READ - Obtener todos los registros
+  async findAll() {
+    return this.prisma.registros.findMany({
+      orderBy: {
+        id: 'desc',
       },
-    };
+    });
   }
 
   // READ - Obtener un registro por ID

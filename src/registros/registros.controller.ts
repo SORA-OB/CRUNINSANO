@@ -26,18 +26,10 @@ export class RegistrosController {
   }
 
   @Get()
-  @ApiOperation({ summary: 'Obtener todos los registros con paginación' })
-  @ApiQuery({ name: 'page', required: false, type: Number, description: 'Número de página (default: 1)' })
-  @ApiQuery({ name: 'limit', required: false, type: Number, description: 'Registros por página, máximo 100 (default: 20)' })
+  @ApiOperation({ summary: 'Obtener todos los registros' })
   @ApiResponse({ status: 200, description: 'Lista de registros obtenida exitosamente' })
-  findAll(
-    @Query('page') page?: string,
-    @Query('limit') limit?: string,
-  ) {
-    return this.registrosService.findAll(
-      page ? parseInt(page, 10) : 1,
-      limit ? parseInt(limit, 10) : 20,
-    );
+  findAll() {
+    return this.registrosService.findAll();
   }
 
   @Get(':id')
