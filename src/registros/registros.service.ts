@@ -1,4 +1,4 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { Injectable, NotFoundException, BadRequestException } from '@nestjs/common';
 import { CreateRegistroDto } from './dto/create-registro.dto';
 import { UpdateRegistroDto } from './dto/update-registro.dto';
 import { PrismaService } from 'src/prisma/prisma.service';
@@ -16,13 +16,35 @@ export class RegistrosService {
     });
   }
 
-  // READ - Obtener todos los registros
-  async findAll() {
-    return this.prisma.registros.findMany({
-      orderBy: {
-        id: 'desc',
+  // READ - Obtener todos los registros CON PAGINACIÓN
+  async findAll(page: number = 1, limit: number = 20) {
+    // Validación de seguridad
+    if (page < 1) page = 1;
+    if (limit < 1) limit = 1;
+    if (limit > 100) limit = 100; // Máximo 100 registros por página para evitar DoS
+
+    const skip = (page - 1) * limit;
+
+    const [registros, total] = await Promise.all([
+      this.prisma.registros.findMany({
+        skip,
+        take: limit,
+        orderBy: {
+          id: 'desc',
+        },
+      }),
+      this.prisma.registros.count(),
+    ]);
+
+    return {
+      data: registros,
+      pagination: {
+        total,
+        page,
+        limit,
+        pages: Math.ceil(total / limit),
       },
-    });
+    };
   }
 
   // READ - Obtener un registro por ID
@@ -59,5 +81,22 @@ export class RegistrosService {
     return this.prisma.registros.delete({
       where: { id },
     });
+  }
+
+  // DELETE - Eliminar todos los registros (CON CONFIRMACIÓN)
+  async removeAll(confirmToken: string) {
+    // Token de confirmación para evitar borrar todo accidentalmente
+    const expectedToken = process.env.DELETE_ALL_TOKEN || 'CONFIRMAR_BORRAR_TODO';
+    
+    if (confirmToken !== expectedToken) {
+      throw new BadRequestException('Token de confirmación inválido. No se pueden borrar los registros.');
+    }
+
+    const result = await this.prisma.registros.deleteMany({});
+    
+    return {
+      message: `Se han eliminado ${result.count} registros.`,
+      deletedCount: result.count,
+    };
   }
 }

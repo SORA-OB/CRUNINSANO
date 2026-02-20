@@ -1,5 +1,5 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete } from '@nestjs/common';
-import { ApiTags, ApiOperation, ApiResponse, ApiParam } from '@nestjs/swagger';
+import { Controller, Get, Post, Body, Patch, Param, Delete, Query } from '@nestjs/common';
+import { ApiTags, ApiOperation, ApiResponse, ApiParam, ApiQuery } from '@nestjs/swagger';
 import { RegistrosService } from './registros.service';
 import { CreateRegistroDto } from './dto/create-registro.dto';
 import { UpdateRegistroDto } from './dto/update-registro.dto';
@@ -18,10 +18,18 @@ export class RegistrosController {
   }
 
   @Get()
-  @ApiOperation({ summary: 'Obtener todos los registros' })
+  @ApiOperation({ summary: 'Obtener todos los registros con paginación' })
+  @ApiQuery({ name: 'page', required: false, type: Number, description: 'Número de página (default: 1)' })
+  @ApiQuery({ name: 'limit', required: false, type: Number, description: 'Registros por página, máximo 100 (default: 20)' })
   @ApiResponse({ status: 200, description: 'Lista de registros obtenida exitosamente' })
-  findAll() {
-    return this.registrosService.findAll();
+  findAll(
+    @Query('page') page?: string,
+    @Query('limit') limit?: string,
+  ) {
+    return this.registrosService.findAll(
+      page ? parseInt(page, 10) : 1,
+      limit ? parseInt(limit, 10) : 20,
+    );
   }
 
   @Get(':id')
@@ -49,5 +57,14 @@ export class RegistrosController {
   @ApiResponse({ status: 404, description: 'Registro no encontrado' })
   remove(@Param('id') id: string) {
     return this.registrosService.remove(+id);
+  }
+
+  @Delete()
+  @ApiOperation({ summary: 'Eliminar todos los registros (requiere token de confirmación)' })
+  @ApiQuery({ name: 'token', required: true, type: String, description: 'Token de confirmación para borrar todos los registros' })
+  @ApiResponse({ status: 200, description: 'Todos los registros fueron eliminados exitosamente' })
+  @ApiResponse({ status: 400, description: 'Token de confirmación inválido' })
+  removeAll(@Query('token') token?: string) {
+    return this.registrosService.removeAll(token || '');
   }
 }

@@ -9,10 +9,18 @@ import { ThrottlerModule } from '@nestjs/throttler';
   imports: [
     PrismaModule, 
     RegistrosModule, 
-    ThrottlerModule.forRoot([{
-      ttl: 60000, // Tiempo en milisegundos (1 minuto)
-      limit: 10,   // Máximo de peticiones por TTL
-    }]),
+    ThrottlerModule.forRoot([
+      {
+        name: 'short',
+        ttl: 1000,        // 1 segundo
+        limit: 3,         // Máximo 3 peticiones por segundo (protege contra ataques DoS rápidos)
+      },
+      {
+        name: 'long',
+        ttl: 60000,       // 1 minuto
+        limit: 50,        // Máximo 50 peticiones por minuto por IP
+      },
+    ]),
   ],
   controllers: [AppController],
   providers: [AppService],
