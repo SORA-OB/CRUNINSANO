@@ -63,7 +63,7 @@ async function bootstrap() {
   
   // Configuración de CORS restringida con verificación de origen
   const allowedOrigins = [
-    process.env.CORS_ORIGIN || 'https://my-repository-seven-hazel.vercel.app',
+    process.env.CORS_ORIGIN,
     'http://localhost:3000',  // Frontend local
     'http://localhost:5173',  // Vite local
   ];

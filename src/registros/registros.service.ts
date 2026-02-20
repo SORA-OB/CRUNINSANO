@@ -86,7 +86,7 @@ export class RegistrosService {
   // DELETE - Eliminar todos los registros (CON CONFIRMACIÓN)
   async removeAll(confirmToken: string) {
     // Token de confirmación para evitar borrar todo accidentalmente
-    const expectedToken = process.env.DELETE_ALL_TOKEN || 'CONFIRMAR_BORRAR_TODO';
+    const expectedToken = process.env.DELETE_ALL_TOKEN;
     
     if (confirmToken !== expectedToken) {
       throw new BadRequestException('Token de confirmación inválido. No se pueden borrar los registros.');
