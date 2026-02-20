@@ -1,19 +1,27 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete, Query } from '@nestjs/common';
+import { Controller, Get, Post, Body, Patch, Param, Delete, Query, Ip } from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiResponse, ApiParam, ApiQuery } from '@nestjs/swagger';
 import { RegistrosService } from './registros.service';
 import { CreateRegistroDto } from './dto/create-registro.dto';
 import { UpdateRegistroDto } from './dto/update-registro.dto';
+import { AntiSpamService } from './anti-spam.service';
 
 @ApiTags('registros')
 @Controller('registros')
 export class RegistrosController {
-  constructor(private readonly registrosService: RegistrosService) {}
+  constructor(
+    private readonly registrosService: RegistrosService,
+    private readonly antiSpamService: AntiSpamService,
+  ) {}
 
   @Post()
   @ApiOperation({ summary: 'Crear un nuevo registro' })
   @ApiResponse({ status: 201, description: 'Registro creado exitosamente' })
-  @ApiResponse({ status: 400, description: 'Datos inválidos' })
-  create(@Body() createRegistroDto: CreateRegistroDto) {
+  @ApiResponse({ status: 400, description: 'Datos inválidos o spam detectado' })
+  @ApiResponse({ status: 429, description: 'Demasiadas peticiones' })
+  create(@Body() createRegistroDto: CreateRegistroDto, @Ip() clientIp: string) {
+    // Validar anti-spam ANTES de crear
+    this.antiSpamService.validateContent(createRegistroDto.registro, clientIp);
+    
     return this.registrosService.create(createRegistroDto);
   }
 

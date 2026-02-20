@@ -61,9 +61,28 @@ async function bootstrap() {
   const document = SwaggerModule.createDocument(app, config);
   SwaggerModule.setup('api', app, document);
   
-  // Configuración de CORS restringida solo a Vercel
+  // Configuración de CORS restringida con verificación de origen
+  const allowedOrigins = [
+    process.env.CORS_ORIGIN || 'https://my-repository-seven-hazel.vercel.app',
+    'http://localhost:3000',  // Frontend local
+    'http://localhost:5173',  // Vite local
+  ];
+
   app.enableCors({
-    origin: process.env.CORS_ORIGIN || 'https://my-repository-seven-hazel.vercel.app',
+    origin: (origin, callback) => {
+      // Permitir requests sin origen (Postman, Thunder Client, etc.) solo en desarrollo
+      if (!origin && process.env.NODE_ENV !== 'production') {
+        return callback(null, true);
+      }
+      
+      // Verificar que el origen esté en la lista permitida
+      if (!origin || allowedOrigins.includes(origin)) {
+        callback(null, true);
+      } else {
+        console.warn(`🚫 Origen bloqueado: ${origin}`);
+        callback(new Error('No permitido por CORS'));
+      }
+    },
     credentials: true,
     methods: ['GET', 'POST', 'DELETE', 'PATCH'],
     allowedHeaders: ['Content-Type', 'Authorization'],

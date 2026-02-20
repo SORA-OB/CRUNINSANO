@@ -76,16 +76,41 @@ Todos los campos son validados automáticamente:
   - Solo permite caracteres alfanuméricos, espacios y puntuación básica
   - Rechaza caracteres de control y secuencias potencialmente maliciosas
 
-### Rate Limiting
+### 🛡️ Sistema Anti-Spam
 
-Se aplica limitación de peticiones por IP:
+La API incluye protección avanzada contra spam y ataques automatizados:
+
+#### Detección de Contenido Duplicado
+- No puedes enviar el **mismo texto más de 2 veces** en 1 minuto
+- Error: `"Contenido duplicado detectado"`
+
+#### Detección de Contenido Sospechoso
+Se bloquean automáticamente textos que contengan:
+- Palabras como "ATACANDO", "PETICIÓN #1", "SIENDO ATACADO", "SPAM"
+- Caracteres repetidos más de 10 veces seguidas (ej: "aaaaaaaaaa")
+- Patrones típicos de ataques automatizados
+
+Error: `"Contenido sospechoso detectado"`
+
+#### Detección de Similitud
+- Si tu contenido es **85% similar** a uno reciente, será bloqueado
+- Evita enviar textos casi idénticos con pequeñas variaciones
+
+Error: `"El contenido es muy similar a un registro reciente"`
+
+### Rate Limiting (Límite de Peticiones)
+
+Se aplica limitación **ESTRICTA** de peticiones por IP:
 
 | Límite | Tiempo | Descripción |
 |--------|--------|-------------|
-| **3 peticiones** | 1 segundo | Protección contra ataques muy veloz |
-| **50 peticiones** | 1 minuto | Límite razonable por minuto |
+| **2 peticiones** | 1 segundo | Protección contra ataques rápidos |
+| **10 peticiones** | 10 segundos | Protección contra scripts automatizados |
+| **30 peticiones** | 1 minuto | Límite para uso normal |
 
 Si excedes estos límites, recibirás un error `429 Too Many Requests`.
+
+⚠️ **IMPORTANTE:** Estos límites se aplican POR IP, no por sesión o usuario.
 
 ### Headers de Seguridad
 
@@ -96,11 +121,18 @@ La API incluye headers de seguridad estándar:
 - `Content-Security-Policy: default-src 'self'`
 - Cache-Control: no-store
 
-### CORS
+### CORS (Orígenes Permitidos)
 
-La API acepta peticiones desde:
-- Desarrollo: `http://localhost:3000` (configurar en `.env`)
-- Producción: `https://my-repository-seven-hazel.vercel.app` (por defecto)
+La API **SOLO** acepta peticiones desde:
+- **Producción:** `https://my-repository-seven-hazel.vercel.app`
+- **Desarrollo local:** `http://localhost:3000` o `http://localhost:5173`
+
+❌ **Peticiones desde otros orígenes serán RECHAZADAS**
+
+Esto previene ataques desde:
+- Consola del navegador en páginas aleatorias
+- Scripts externos no autorizados
+- Otros dominios maliciosos
 
 ---
 
@@ -197,6 +229,9 @@ Content-Type: application/json
 - Mínimo 3 caracteres
 - Máximo 500 caracteres
 - No puede contener caracteres peligrosos
+- **No puede ser duplicado** (mismo texto más de 2 veces en 1 minuto)
+- **No puede ser sospechoso** (palabras como "ATAQUE", patrones maliciosos)
+- **No puede ser muy similar** a registros recientes (>85% similitud)
 
 #### Respuesta exitosa (201)
 
@@ -207,7 +242,7 @@ Content-Type: application/json
 }
 ```
 
-#### Respuesta error (400)
+#### Respuesta error (400) - Validación
 
 ```json
 {
@@ -216,6 +251,44 @@ Content-Type: application/json
     "El campo debe tener al menos 3 caracteres",
     "El campo contiene caracteres no permitidos"
   ],
+  "statusCode": 400
+}
+```
+
+#### Respuesta error (400) - Anti-Spam
+
+```json
+{
+  "message": "Contenido duplicado detectado. Has enviado este mismo texto 2 veces en el último minuto.",
+  "statusCode": 400
+}
+```
+
+o
+
+```json
+{
+  "message": "Contenido sospechoso detectado. Tu registro ha sido bloqueado por seguridad.",
+  "statusCode": 400
+}
+```
+
+o
+
+```json
+{
+  "message": "El contenido es muy similar a un registro reciente. Por favor varía tu entrada.",
+  "statusCode": 400
+}
+```
+
+#### Respuesta error (429) - Rate Limiting
+
+```json
+{
+  "message": "Too Many Requests",
+  "statusCode": 429
+}
   "statusCode": 400
 }
 ```
